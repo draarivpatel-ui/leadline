@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="description" content="Open EDF, EDF+ and BDF recordings in the browser. The file is read on your computer and never uploaded." />
+    <title>Leadline</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="./fonts/Sounding-SemiBold.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="./fonts/Sounding-Regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="./fonts/Sounding-Sloped.woff2" as="font" type="font/woff2" crossorigin />
+    <script type="module" crossorigin src="./assets/index-DYt6parN.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Dg59L8X9.css">
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <symbol id="i-open" viewBox="0 0 20 20"><path d="M3 5.5h5l1.6 1.8H17v8.2H3z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" /></symbol>
+        <symbol id="i-down" viewBox="0 0 20 20"><path d="M6 8l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+        <symbol id="i-left" viewBox="0 0 20 20"><path d="M12 5l-5 5 5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+        <symbol id="i-right" viewBox="0 0 20 20"><path d="M8 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+        <symbol id="i-plus" viewBox="0 0 20 20"><path d="M10 5v10M5 10h10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></symbol>
+        <symbol id="i-minus" viewBox="0 0 20 20"><path d="M5 10h10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></symbol>
+        <symbol id="i-panel" viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5" /><path d="M12.5 4v12" stroke="currentColor" stroke-width="1.5" /></symbol>
+        <symbol id="i-sliders" viewBox="0 0 20 20"><path d="M4 6h7M15 6h1M4 14h1M9 14h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /><circle cx="13" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="1.5" /><circle cx="7" cy="14" r="2" fill="none" stroke="currentColor" stroke-width="1.5" /></symbol>
+        <symbol id="i-close" viewBox="0 0 20 20"><path d="M6 6l8 8M14 6l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></symbol>
+      </defs>
+    </svg>
+
+    <header class="bar">
+      <a class="mark" href="./" aria-label="Leadline home"><span class="mark-dot" aria-hidden="true">&#xE000;</span>Leadline</a>
+      <div class="bar-file">
+        <label class="btn btn-primary" for="file-input">
+          <svg class="ic" aria-hidden="true"><use href="#i-open" /></svg><span>Open</span>
+        </label>
+        <input id="file-input" type="file" accept=".edf,.bdf,.rec,.EDF,.BDF" multiple hidden />
+        <div class="menu" id="samples-menu">
+          <button class="btn" type="button" aria-haspopup="true" aria-expanded="false" id="samples-btn">
+            <span>Samples</span><svg class="ic" aria-hidden="true"><use href="#i-down" /></svg>
+          </button>
+          <div class="menu-list" role="menu" hidden>
+            <button role="menuitem" type="button" data-sample="sleep"><b>Sleep night</b><span>Sleep-EDF SC4001, 6.8 h, 7 signals, scored stages</span></button>
+            <button role="menuitem" type="button" data-sample="motor"><b>Motor imagery</b><span>PhysioNet S001R03, 2 min, 64 channels</span></button>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-icon bar-settings-toggle" type="button" id="settings-toggle" aria-expanded="false" aria-controls="controls" aria-label="Display settings">
+        <svg class="ic" aria-hidden="true"><use href="#i-sliders" /></svg>
+      </button>
+      <form class="controls" id="controls" aria-label="Display settings" onsubmit="return false">
+        <label class="field"><span>Montage</span>
+          <select id="montage" disabled></select>
+        </label>
+        <label class="field"><span>High-pass</span>
+          <select id="hp"><option value="0">Off</option><option value="0.1">0.1 Hz</option><option value="0.3">0.3 Hz</option><option value="0.5">0.5 Hz</option><option value="1" selected>1 Hz</option><option value="5">5 Hz</option></select>
+        </label>
+        <label class="field"><span>Low-pass</span>
+          <select id="lp"><option value="0">Off</option><option value="15">15 Hz</option><option value="30">30 Hz</option><option value="35">35 Hz</option><option value="45">45 Hz</option><option value="70" selected>70 Hz</option></select>
+        </label>
+        <label class="field"><span>Notch</span>
+          <select id="notch"><option value="0">Off</option><option value="50">50 Hz</option><option value="60">60 Hz</option></select>
+        </label>
+        <div class="field"><span id="gain-label">Gain</span>
+          <div class="stepper" role="group" aria-labelledby="gain-label">
+            <button class="btn btn-icon" type="button" id="gain-down" aria-label="Lower gain"><svg class="ic" aria-hidden="true"><use href="#i-minus" /></svg></button>
+            <output id="gain-out" aria-live="polite">1.0x</output>
+            <button class="btn btn-icon" type="button" id="gain-up" aria-label="Raise gain"><svg class="ic" aria-hidden="true"><use href="#i-plus" /></svg></button>
+          </div>
+        </div>
+        <label class="field"><span>Window</span>
+          <select id="span"><option value="5">5 s</option><option value="10">10 s</option><option value="20">20 s</option><option value="30" selected>30 s</option><option value="60">1 min</option><option value="120">2 min</option><option value="300">5 min</option></select>
+        </label>
+        <label class="field"><span>Grid</span>
+          <select id="grid"><option value="1">1 s</option><option value="30">30 s epochs</option><option value="0">Off</option></select>
+        </label>
+      </form>
+      <div class="bar-proof">
+        <p class="local" id="local-proof" title="Counted from the browser's own resource timing list"><span class="before-file">Nothing uploaded. Files are read on this computer.</span><span class="after-file">Nothing uploaded. <span id="req-count">0</span> <span id="req-word">network requests</span> since this file opened.</span></p>
+        <p class="nodx">Not for diagnosis</p>
+      </div>
+    </header>
+
+    <main class="work" id="work">
+      <section class="start" id="start" aria-labelledby="start-title">
+        <div class="start-inner">
+          <h1 id="start-title">Open an EDF, EDF+ or BDF recording</h1>
+          <div class="start-actions">
+            <label class="btn btn-primary btn-large" for="file-input"><svg class="ic" aria-hidden="true"><use href="#i-open" /></svg><span>Choose files</span></label>
+          </div>
+          <ul class="start-samples" aria-label="Open sample recordings">
+            <li><button type="button" data-sample="sleep"><b>Sleep night</b><span>Sleep-EDF SC4001 with its technician-scored hypnogram. 6.8 hours, 7 signals at 100 Hz and 1 Hz.</span><img class="preview" src="./samples/sleep-preview.svg" alt="" width="320" height="54" /></button></li>
+            <li><button type="button" data-sample="motor"><b>Motor imagery</b><span>PhysioNet EEG Motor Movement/Imagery, subject 1, run 3. 2 minutes, 64 channels at 160 Hz, task annotations.</span></button></li>
+          </ul>
+          <p class="start-error" id="start-error" role="alert" hidden></p>
+        </div>
+      </section>
+
+      <section class="viewer" id="viewer" hidden aria-label="Recording">
+        <div class="labels" id="labels" aria-hidden="true"></div>
+        <div class="traces" id="traces-wrap">
+          <canvas id="traces" role="img" aria-label="Signal traces"></canvas>
+          <div class="busy" id="busy" hidden>Reading</div>
+        </div>
+        <aside class="panel" id="panel" aria-label="Recording details">
+          <div class="tabs" role="tablist">
+            <button role="tab" type="button" id="tab-ann" aria-selected="true" aria-controls="pane-ann">Annotations <span class="count" id="ann-count">0</span></button>
+            <button role="tab" type="button" id="tab-file" aria-selected="false" aria-controls="pane-file">File</button>
+            <button class="btn btn-icon panel-close" type="button" id="panel-close" aria-label="Hide details"><svg class="ic" aria-hidden="true"><use href="#i-close" /></svg></button>
+          </div>
+          <div class="pane" id="pane-ann" role="tabpanel" aria-labelledby="tab-ann">
+            <label class="check"><input type="checkbox" id="ann-stages" /> <span id="ann-stages-label">Show sleep stage marks</span></label>
+            <ol class="ann-list" id="ann-list"></ol>
+          </div>
+          <div class="pane" id="pane-file" role="tabpanel" aria-labelledby="tab-file" hidden>
+            <dl class="facts" id="facts"></dl>
+            <div id="notes"></div>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <footer class="chart" id="chart" hidden>
+      <div class="chart-head">
+        <div class="nav" role="group" aria-label="Move through the recording">
+          <button class="btn btn-icon" type="button" id="prev" aria-label="Previous page"><svg class="ic" aria-hidden="true"><use href="#i-left" /></svg></button>
+          <output class="clock" id="clock">00:00:00</output>
+          <button class="btn btn-icon" type="button" id="next" aria-label="Next page"><svg class="ic" aria-hidden="true"><use href="#i-right" /></svg></button>
+        </div>
+        <label class="field field-inline"><span>Spectrogram</span><select id="spec-channel"></select></label>
+        <button class="btn btn-icon panel-open" type="button" id="panel-open" aria-label="Show details" aria-pressed="true"><svg class="ic" aria-hidden="true"><use href="#i-panel" /></svg></button>
+      </div>
+      <div class="chart-rows">
+        <div class="chart-axis" id="depth-axis" aria-hidden="true"></div>
+        <canvas id="depth" role="slider" tabindex="0" aria-label="Position in the recording" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"></canvas>
+        <div class="chart-axis" id="spec-axis" aria-hidden="true"></div>
+        <canvas id="spec" aria-label="Spectrogram of the whole recording"></canvas>
+        <div></div>
+        <div class="timeline" id="timeline" aria-hidden="true"></div>
+      </div>
+    </footer>
+    <div class="drop" id="drop" hidden><p>Drop to open</p></div>
+  </body>
+</html>
