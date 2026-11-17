@@ -1,5 +1,5 @@
 // Starts a Vite dev server, opens the harness in the installed Google Chrome (headless), and checks the result,
-// including that the page made no request to any other origin. Run through browser-lock.sh.
+// including that the page made no request to any other origin.
 import { createServer } from 'vite';
 import { chromium } from 'playwright-core';
 

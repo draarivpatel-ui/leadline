@@ -1,7 +1,7 @@
 // End-to-end check of the BUILT app (dist/) in the installed Google Chrome, headless.
 // Opens both bundled samples, drives montage, filters, paging and the depth-profile navigator, measures pan
 // timing, asserts zero off-origin requests and no page errors, and writes screenshots.
-// Usage: node tests/browser/app-e2e.mjs [outDir]   (run `npx vite build` first; wrap with browser-lock.sh here)
+// Usage: node tests/browser/app-e2e.mjs [outDir]   (run `npx vite build` first)
 import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { preview } from 'vite';
