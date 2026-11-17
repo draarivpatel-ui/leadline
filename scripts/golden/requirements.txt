@@ -1,0 +1,5 @@
+# Reference tools for scripts/golden/*.py (versions the committed results were produced with).
+numpy==2.0.2
+scipy==1.13.1
+pyEDFlib==0.1.42
+mne==1.8.0

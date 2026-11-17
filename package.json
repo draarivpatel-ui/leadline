@@ -1,0 +1,25 @@
+{
+  "name": "leadline",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser-only viewer for EEG and sleep recordings (EDF, EDF+, BDF). Nothing is uploaded.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "fetch-data": "sh scripts/fetch-test-data.sh",
+    "golden": "sh scripts/golden/run.sh",
+    "test:browser": "node tests/browser/run-harness.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "edfcore": "^0.6.325",
+    "playwright-core": "^1.65.1",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.6",
+    "vitest": "^3.2.7"
+  }
+}
