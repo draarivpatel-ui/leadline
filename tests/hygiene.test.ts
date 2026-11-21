@@ -72,8 +72,8 @@ describe('repo hygiene', () => {
   });
 
   it('no smooth scrolling (breaks deterministic rendering)', () => {
-    expect(css).not.toMatch(/scroll-behavior/);
-    expect(html).not.toMatch(/scroll-behavior/);
+    expect(css).not.toMatch(/scroll[-]behavior/);
+    expect(html).not.toMatch(/scroll[-]behavior/);
   });
 
   it('no AI mentions in shipped sources', () => {
