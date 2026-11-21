@@ -59,6 +59,9 @@ export interface Settings {
   filters: FilterSettings;
 }
 
+/** setSettings accepts a partial filters object; untouched fields keep their values. */
+export type SettingsPatch = { montage?: MontageId; filters?: Partial<FilterSettings> };
+
 export interface WindowRequest {
   /** Seconds after the recording start. */
   start: number;
@@ -195,7 +198,7 @@ export class Engine {
     return structuredClone(this.settings);
   }
 
-  setSettings(next: Partial<Settings>): Settings {
+  setSettings(next: SettingsPatch): Settings {
     if (next.montage) {
       const m = this.montages.find((x) => x.id === next.montage);
       if (!m) throw new RangeError(`Unknown montage "${next.montage}".`);
@@ -208,6 +211,7 @@ export class Engine {
         if (!(typeof v === 'number' && Number.isFinite(v) && v >= 0)) throw new RangeError(`Filter setting ${k} must be a number of at least 0.`);
       }
       if (f.highpass > 0 && f.lowpass > 0 && f.highpass >= f.lowpass) throw new RangeError('The high-pass cutoff must be below the low-pass cutoff.');
+      if (!Number.isInteger(f.order) || f.order < 1) throw new RangeError('The filter order must be a whole number above 0.');
       this.settings.filters = f;
       this.chains.clear();
     }
@@ -246,6 +250,8 @@ export class Engine {
   async readWindow(req: WindowRequest): Promise<WindowResult> {
     const t = now();
     const width = Math.max(1, Math.floor(req.width));
+    if (!Number.isFinite(width)) throw new RangeError('The window width must be a finite number of columns.');
+    if (!Number.isFinite(req.start)) throw new RangeError('The window start must be a finite number of seconds.');
     if (!(req.duration > 0 && req.duration <= MAX_WINDOW_S)) throw new RangeError(`The window duration must be above 0 and at most ${MAX_WINDOW_S} s.`);
     if (req.width > MAX_WIDTH) throw new RangeError(`The window width must be at most ${MAX_WIDTH} columns.`);
     const all = this.montage().derivations;
@@ -273,6 +279,7 @@ export class Engine {
     const noverlap = Math.min(nperseg - 1, Math.max(0, Math.round(nperseg * Math.min(0.9, req.overlap ?? 0.5))));
     const step = nperseg - noverlap;
     const fmax = Math.min(req.fmax ?? fs / 2, fs / 2);
+    if (!(fmax > 0)) throw new RangeError('The spectrogram fmax must be above 0 Hz.');
     const start = Math.max(0, req.start);
     const end = Math.min(this.rec.duration, req.start + req.duration);
     // Read in chunks so a whole night never needs to be in memory at once, and keep only the bins up to fmax.

@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light" />
     <meta name="description" content="Open EDF, EDF+ and BDF recordings in the browser. The file is read on your computer and never uploaded." />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'"
+    />
     <title>Leadline</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <link rel="preload" href="./fonts/Sounding-SemiBold.woff2" as="font" type="font/woff2" crossorigin />
@@ -47,7 +51,7 @@
       <button class="btn btn-icon bar-settings-toggle" type="button" id="settings-toggle" aria-expanded="false" aria-controls="controls" aria-label="Display settings">
         <svg class="ic" aria-hidden="true"><use href="#i-sliders" /></svg>
       </button>
-      <form class="controls" id="controls" aria-label="Display settings" onsubmit="return false">
+      <form class="controls" id="controls" aria-label="Display settings">
         <label class="field"><span>Montage</span>
           <select id="montage" disabled></select>
         </label>
@@ -97,7 +101,7 @@
 
       <section class="viewer" id="viewer" hidden aria-label="Recording">
         <div class="labels" id="labels" aria-hidden="true"></div>
-        <div class="traces" id="traces-wrap">
+        <div class="traces" id="traces-wrap" tabindex="0">
           <canvas id="traces" role="img" aria-label="Signal traces"></canvas>
           <div class="busy" id="busy" hidden>Reading</div>
         </div>

@@ -62,6 +62,9 @@ export function parseTals(bytes: Uint8Array, firstSignal: boolean): TalResult {
       continue;
     }
     const onset = Number(onsetText);
+    // About 31.7 years: past that the annotation cannot be from a real
+    // recording and the clock cannot represent it.
+    if (Math.abs(onset) > 1e9) problems.push(`A TAL onset is far outside any plausible recording: "${onsetText}".`);
     let duration: number | null = null;
     if (durationText !== null && durationText.length > 0) {
       if (!DURATION.test(durationText)) {

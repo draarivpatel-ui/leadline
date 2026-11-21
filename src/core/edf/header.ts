@@ -101,7 +101,11 @@ function num(value: string, field: string): number {
   if (!NUMBER.test(value)) {
     throw new EdfError('BAD_FIELD', `The header field "${field}" is not a number: "${value}"`);
   }
-  return Number.parseFloat(value);
+  const n = Number.parseFloat(value);
+  if (!Number.isFinite(n)) {
+    throw new EdfError('BAD_FIELD', `The header field "${field}" is not finite: "${value}"`);
+  }
+  return n;
 }
 
 function int(value: string, field: string): number {
@@ -118,10 +122,19 @@ function parseStart(dateField: string, timeField: string, recording?: EdfPlusRec
   const [hour, minute, second] = [Number(t[1]), Number(t[2]), Number(t[3])];
   if (hour > 23 || minute > 59 || second > 59) throw new EdfError('BAD_FIELD', `The start time is out of range: "${timeField}"`);
 
+  // Years below 100 sit in Date.UTC's 1900 offset window, so shift them one
+  // 400-year Gregorian cycle to keep leap-year day counts right.
+  const daysIn = (year: number, month: number) => new Date(Date.UTC(year < 100 ? year + 400 : year, month, 0)).getUTCDate();
+
   // EDF+ item 4: "Startdate dd-MMM-yyyy" in the recording field carries the four-digit year.
   const plus = recording ? /^(\d{2})-([A-Z]{3})-(\d{4})$/.exec(recording.startdate) : null;
-  if (plus && MONTHS.includes(plus[2])) {
-    return { year: Number(plus[3]), month: MONTHS.indexOf(plus[2]) + 1, day: Number(plus[1]), hour, minute, second };
+  if (plus) {
+    if (!MONTHS.includes(plus[2])) throw new EdfError('BAD_FIELD', `The EDF+ Startdate month is not a month name: "${plus[2]}"`);
+    const year = Number(plus[3]);
+    const month = MONTHS.indexOf(plus[2]) + 1;
+    const day = Number(plus[1]);
+    if (day < 1 || day > daysIn(year, month)) throw new EdfError('BAD_FIELD', `The EDF+ Startdate day is out of range: "${plus[0]}"`);
+    return { year, month, day, hour, minute, second };
   }
   const d = /^(\d{1,2})\D(\d{1,2})\D(\d{2})$/.exec(dateField);
   if (!d) throw new EdfError('BAD_FIELD', `The start date is not dd.mm.yy: "${dateField}"`);
@@ -130,7 +143,7 @@ function parseStart(dateField: string, timeField: string, recording?: EdfPlusRec
   const year = yy >= 85 ? 1900 + yy : 2000 + yy;
   const month = Number(d[2]);
   const day = Number(d[1]);
-  if (month < 1 || month > 12 || day < 1 || day > 31) throw new EdfError('BAD_FIELD', `The start date is out of range: "${dateField}"`);
+  if (month < 1 || month > 12 || day < 1 || day > daysIn(year, month)) throw new EdfError('BAD_FIELD', `The start date is out of range: "${dateField}"`);
   return { year, month, day, hour, minute, second };
 }
 
@@ -232,6 +245,7 @@ export async function parseHeader(source: ByteSource, options: ParseOptions = {}
     }
     if (samplesPerRecord < 0) throw new EdfError('BAD_SIGNAL', `${at} has a negative number of samples per record.`);
     const bitValue = isAnnotation ? 1 : (physicalMax - physicalMin) / (digitalMax - digitalMin);
+    if (!isAnnotation && !Number.isFinite(bitValue)) throw new EdfError('BAD_FIELD', `The physical range of ${at} is too wide to convert.`);
     signals.push({
       index: i,
       label,

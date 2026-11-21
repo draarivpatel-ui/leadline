@@ -5,6 +5,7 @@
  */
 import { createEngineClient, isEegLike, isSleepRecording, stageOf, type AnnotationItem, type Derivation, type Hypnogram, type RecordingInfo, type SpectrogramTile, type WindowResult } from '../core/index';
 import { depthLabels, drawDepth, drawSpectrogram, drawTraces, readPalette, sizeCanvas, specAxis, spectrogramImage, type Palette } from './render';
+import { chooseTickStep } from './ticks';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -643,9 +644,8 @@ function renderAxes() {
   tl.innerHTML = '';
   if (!S.info) return;
   const d = S.info.duration;
-  const steps = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600, 7200];
   const want = Math.max(2, Math.floor(tl.clientWidth / 90));
-  const step = steps.find((s) => d / s <= want) ?? 7200;
+  const step = chooseTickStep(d, want);
   const startClock = (S.info.startMs / 1000) % 86400;
   const first = Math.ceil((startClock) / step) * step - startClock;
   for (let t = first; t <= d; t += step) {
@@ -820,6 +820,7 @@ function hms(s: number) {
 function clockAt(t: number) {
   if (!S.info) return '';
   const d = new Date(S.info.startMs + t * 1000);
+  if (Number.isNaN(d.getTime())) return '--:--:--';
   return d.toISOString().slice(11, 19);
 }
 
@@ -927,6 +928,7 @@ menuList.addEventListener('keydown', (e) => {
 document.querySelectorAll<HTMLButtonElement>('[data-sample]').forEach((b) => b.addEventListener('click', () => openSample(b.dataset.sample!)));
 
 /* ---------------- controls ---------------- */
+$('controls').addEventListener('submit', (e) => e.preventDefault());
 $('file-input').addEventListener('change', (e) => {
   const input = e.target as HTMLInputElement;
   openFiles([...(input.files ?? [])]);
@@ -1049,9 +1051,11 @@ document.addEventListener('keydown', (e) => {
     goTo(0);
   } else if (e.key === 'End') {
     goTo(S.info.duration);
-  } else if (e.key === '+' || e.key === '=') {
+  // Printable-character keys act only when the view they change has focus (WCAG 2.1.4): the
+  // pointer gain buttons work everywhere, so a focused button or field is never surprised.
+  } else if ((e.key === '+' || e.key === '=') && t.closest('#traces-wrap')) {
     setGain(S.gain * 1.5);
-  } else if (e.key === '-' || e.key === '_') {
+  } else if ((e.key === '-' || e.key === '_') && t.closest('#traces-wrap')) {
     setGain(S.gain / 1.5);
   }
 });
@@ -1079,8 +1083,8 @@ depthCanvas.addEventListener('keydown', (e) => {
   const big = S.info.duration / 20;
   if (e.key === 'ArrowRight' || e.key === 'ArrowUp') goTo(S.start + S.span);
   else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') goTo(S.start - S.span);
-  else if (e.key === 'PageUp') goTo(S.start + big);
-  else if (e.key === 'PageDown') goTo(S.start - big);
+  else if (e.key === 'PageDown') goTo(S.start + big);
+  else if (e.key === 'PageUp') goTo(S.start - big);
   else return;
   e.preventDefault();
   e.stopPropagation();
